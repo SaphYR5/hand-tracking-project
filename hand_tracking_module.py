@@ -4,14 +4,15 @@ import time
 
 
 class HandDetector:
-    def __init__(self, mode=False, max_hands=2, detection_con=0.5, track_con=0.5):
+    def __init__(self, mode=False, max_hands=2, model_complexity=1, detection_con=0.5, track_con=0.5):
         self.mode = mode
         self.maxHands = max_hands
+        self.model_complexity = model_complexity
         self.detectionCon = detection_con
         self.trackCon = track_con
 
         self.mpHands = mp.solutions.hands
-        self.hands = self.mpHands.Hands(self.mode, self.maxHands, self.detectionCon, self.trackCon)
+        self.hands = self.mpHands.Hands(self.mode, self.maxHands, self.model_complexity, self.detectionCon, self.trackCon)
         self.mpDraw = mp.solutions.drawing_utils
 
     def find_hands(self, img, draw=True):
@@ -23,6 +24,8 @@ class HandDetector:
             for handLms in results.multi_hand_landmarks:
                 if draw:
                     self.mpDraw.draw_landmarks(img, handLms, self.mpHands.HAND_CONNECTIONS)
+
+        return img
 
                 # for id, lm in enumerate(handLms.landmark):
                 #     #print(id, lm)
@@ -38,9 +41,11 @@ def main():
     cTime = 0
 
     cap = cv2.VideoCapture(0)
+    detector = HandDetector()
 
     while True:
         success, img = cap.read()
+        img = detector.find_hands(img)
 
         cTime = time.time()
         fps = 1 / (cTime - pTime)
